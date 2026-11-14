@@ -1,4 +1,4 @@
-# TGLDmic kext package (Tiger Lake & Comet Lake / X1 Carbon Gen 7)
+# TGLDmic kext package (Tiger Lake & Comet Lake / X1 Carbon Gen 7 / XiaoXin Pro 13 2020)
 
 | File | What |
 |---|---|

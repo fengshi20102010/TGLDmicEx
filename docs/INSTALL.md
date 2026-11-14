@@ -3,6 +3,7 @@
 Supported laptops:
 - **Lenovo ThinkPad X1 Carbon Gen 7** (Comet Lake i7-10710U / i7-10510U, Whiskey Lake i7-8565U / i5-8265U) with ALC285 & 4-mic array
 - **HP EliteBook 840 G8** (Tiger Lake i5-1135G7 / i7-1165G7) with ALC285 & 4-mic array
+- **Lenovo XiaoXin Pro 13 2020 (82DN)** (Comet Lake i7-10710U) with ALC257 & **2-mic** array (0.6.5, verified on macOS 15.8.2 only; see [XIAOXIN-PRO13.md](XIAOXIN-PRO13.md))
 - Other Intel Tiger Lake (`8086:A0C8`, `8086:43C8`) and Comet Lake / Whiskey Lake / Coffee Lake (`8086:02C8`, `8086:9DC8`, `8086:A348`) laptops with PDM microphone arrays on the Intel cAVS audio DSP.
 
 Each build produces one file:
@@ -23,6 +24,9 @@ Each build produces one file:
    Lilu must be loaded first; the position of AppleALC is not critical.
 3. In `NVRAM` -> `Add` -> `7C436110-AB2A-4BBB-A880-FE41995C9F82` -> `boot-args`, add
    `-tgldmiclilu` (or `-tgldmicinject`; they are equivalent). Optional: `tgldmicgain=<percent>`.
+   0.6.5 reads the number of microphones from the ACPI NHLT table and needs nothing more on 2-mic or 4-mic
+   laptops. `tgldmicch=2` / `tgldmicch=4` forces the pipeline; `ioreg -l -w0 -c TGLDmic | grep -E 'Nhlt|Dmic'`
+   shows what was detected. `tgldmicgproc=0` turns off setting the DSP processing enable (see [TESTING.md](TESTING.md)).
    The old `-tgldmic` plug-in mode and `tgldmicinjtick` / `tgldmicinject=<idx>` no longer exist.
 4. Reboot and select the native **Internal Microphone** in **System Settings → Sound → Input**.
 

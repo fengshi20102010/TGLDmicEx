@@ -9,10 +9,13 @@
 <p align="center"><a href="https://hits.sh/github.com/labrouss/TGLDmic/"><img src="https://hits.sh/github.com/labrouss/TGLDmic.svg?view=today-total&style=flat-square&label=visits" alt="visits"></a></p>
 
 <p align="center"><b>面向 macOS 的 Tiger Lake 与 Comet Lake 麦克风驱动</b><br>
-通过 Intel Smart Sound DSP（SOF）驱动 Intel Tiger Lake 与 Comet Lake / Cannon Lake 笔记本（包括 ThinkPad X1 Carbon Gen 7）的内置数字麦克风（DMIC）</p>
+通过 Intel Smart Sound DSP（SOF）驱动 Intel Tiger Lake 与 Comet Lake / Cannon Lake 笔记本（包括 ThinkPad X1 Carbon Gen 7 与联想小新 Pro 13 2020）的内置数字麦克风（DMIC）</p>
 
 > [!NOTE]
 > **本分支基于 [labrouss/TGLDmic](https://github.com/labrouss/TGLDmic)，针对 Comet Lake（CML）ThinkPad X1 Carbon Gen 7（X1C7）适配。** 新增 cAVS 1.8 平台支持、动态核心电源门控、双份内嵌 Intel 生产签名 SOF v2.2 固件（`sof-cml.ri` 与 `sof-tgl.ri`）、动态输入流分配，以及将原生 Internal Microphone 引擎接入 DSP 的 Lilu Hook。
+
+> [!NOTE]
+> **本仓库的维护位置。** 本仓库延续 [qqaoshi888/TGLDmicEx](https://github.com/qqaoshi888/TGLDmicEx)。后者已归档（只读），无法再接收 Pull Request；它又是 [labrouss/TGLDmic](https://github.com/labrouss/TGLDmic) 的 fork，而 labrouss 的 `main` 分支里没有本项目所依赖的 Lilu Hook。因此后续改动（例如 0.6.5 加入的**联想小新 Pro 13 2020**支持）在这里发布，Issue 和 Pull Request 也请提交到本仓库。
 
 > 非官方社区项目，与 Intel、Apple 或任何笔记本厂商无关，也未获其背书。
 
@@ -44,14 +47,15 @@ TGLDmic 在该 DSP 上启动 Intel 签名的 SOF 固件，并通过 Lilu 对 `Ap
 - 支持反复录音；与 AppleHDA/AppleALC 共存
 - Lilu Hook `AppleHDAEngine::convertInputSamples`；外接耳机麦和 Line In 仍走 AppleHDA 原有路径
 - 双架构支持：Intel cAVS 2.5（Tiger Lake）与 cAVS 1.8（Comet Lake / Cannon Lake / Coffee Lake）
+- 支持 2 麦和 4 麦阵列（0.6.5）：按 ACPI NHLT 表里的 PDM 麦克风数量自动选择管线，`tgldmicch=2` / `tgldmicch=4` 可强制指定
 
 ## 兼容性
 | | |
 |---|---|
-| 支持（Comet Lake / CFL） | Intel Smart Sound DSP `8086:02C8`：Comet Lake **LP**（第 10 代 Core，例如 **Lenovo ThinkPad X1 Carbon Gen 7** i7-10710U / i5-10210U）<br>Intel Smart Sound DSP `8086:9DC8`：Cannon Lake / Whiskey Lake **LP**（例如 ThinkPad X1 Carbon Gen 7 i7-8565U）<br>Intel Smart Sound DSP `8086:06C8`、`8086:A348`：Comet Lake-H、Coffee Lake-H |
+| 支持（Comet Lake / CFL） | Intel Smart Sound DSP `8086:02C8`：Comet Lake **LP**（第 10 代 Core，例如 **Lenovo ThinkPad X1 Carbon Gen 7** i7-10710U / i5-10210U、**联想小新 Pro 13 2020（82DN）** i7-10710U）<br>Intel Smart Sound DSP `8086:9DC8`：Cannon Lake / Whiskey Lake **LP**（例如 ThinkPad X1 Carbon Gen 7 i7-8565U）<br>Intel Smart Sound DSP `8086:06C8`、`8086:A348`：Comet Lake-H、Coffee Lake-H |
 | 支持（Tiger Lake） | Intel Smart Sound DSP `8086:A0C8`：Tiger Lake **LP**（第 11 代 Core，UP3/UP4）<br>Intel Smart Sound DSP `8086:43C8`：Tiger Lake **H** |
-| 已测试硬件 | **Lenovo ThinkPad X1 Carbon Gen 7**（Comet Lake i7-10710U，4 个 PDM 麦克风，ALC285）<br>**HP EliteBook 840 G8**（Tiger Lake i5-1135G7，4 个 PDM 麦克风，ALC285） |
-| macOS | 已在 Ventura、Sonoma、Sequoia、Tahoe 测试 / 支持 |
+| 已测试硬件 | **联想小新 Pro 13 2020（82DN）**（Comet Lake i7-10710U，**2** 个 PDM 麦克风，ALC257）：**0.6.5**，macOS 15.8.2 Sequoia<br>**Lenovo ThinkPad X1 Carbon Gen 7**（Comet Lake i7-10710U，4 个 PDM 麦克风，ALC285）：测到 0.6.4，**未用 0.6.5 重新测试**<br>**HP EliteBook 840 G8**（Tiger Lake i5-1135G7，4 个 PDM 麦克风，ALC285）：测到 0.6.4，**未用 0.6.5 重新测试** |
+| macOS | 之前的机型已在 Ventura、Sonoma、Sequoia、Tahoe 测试 / 支持；小新 Pro 13 只在 Sequoia 15.8.2 上测试过 |
 | 音频驱动 | 可与 **AppleALC/AppleHDA** 或 **HDAUniversal** 共存（扬声器和耳机仍由它们处理） |
 
 > **Device-id spoof：** OpenCore 配置通常会把音频控制器伪装成 `34C8` 或 `9DC8` 供 AppleALC 使用。
@@ -79,6 +83,10 @@ TGLDmic 在该 DSP 上启动 Intel 签名的 SOF 固件，并通过 Lilu 对 `Ap
 > 引擎的 Core Audio 缓冲区。不需要第二个设备或插件，内置麦路径不再调用原转换函数；外接输入
 > （耳机麦 / Line In）仍走 AppleHDA 自己的路径。见 [docs/INSTALL.md](docs/INSTALL.md)。
 
+> **v0.6.5，联想小新 Pro 13 2020（2 个麦克风）：** 这台机器上 DSP 启动会卡在 "core0 power up"，原因是固件把 `PPCTL.GPROCEN`（DSP 的全局处理使能位）留成了 0。0.6.5 在启动 DSP 前置位、用完恢复，按 Linux 的做法把多余的 DSP 核心断电，并新增 2 麦管线，按 ACPI NHLT 自动选择（`tgldmicch=2|4` 可强制指定）。**目前只在小新 Pro 13 上验证过 0.6.5。** 核心断电这一步会改变所有 Comet Lake 机器的启动流程，管线选择则在所有机器上运行，所以欢迎 ThinkPad X1 Carbon Gen 7 和 EliteBook 840 G8 的用户反馈 0.6.5 的表现。分析、证据和未完成事项见 [docs/XIAOXIN-PRO13.md](docs/XIAOXIN-PRO13.md)，启动参数见 [docs/TESTING.md](docs/TESTING.md)。
+>
+> 另一个独立的问题：这台笔记本睡眠唤醒后耳机声音变小、有爆音（AppleALC layout 11）。仅修改数据的 AppleALC 补丁和脚本放在 [tools/applealc/](tools/applealc/)。
+
 完整步骤、排错和卸载：[docs/INSTALL.md](docs/INSTALL.md)。
 
 ## 工作原理
@@ -104,7 +112,9 @@ GitHub Actions 会在每次 push 时构建 kext，并在 `v*` tag 时附加到 R
 
     make -C kext SDK=/path/to/MacKernelSDK
 
-`tools/set-version.sh X.Y.Z` 会更新所有位置的版本号。
+`tools/set-version.sh X.Y.Z` 会更新所有位置的版本号。`make -C kext test` 运行 NHLT 解析器的主机单元测试，不需要内核 SDK。
+
+发布版本：推送名为 `v<版本号>` 的 tag（例如 `v0.6.5`），工作流会构建 kext，并把 `TGLDmic-<版本号>-kext.zip` 附到对应的 GitHub Release。
 
 | 路径 | 内容 |
 |---|---|
@@ -123,6 +133,8 @@ GitHub Actions 会在每次 push 时构建 kext，并在 `v*` tag 时附加到 R
 
 ## 致谢
 - [labrouss](https://github.com/labrouss) — 原始 TGLDmic
+- [medkintos](https://github.com/medkintos) — ThinkPad X1 Carbon Gen 7 / Comet Lake（cAVS 1.8）适配
+- [qqaoshi888](https://github.com/qqaoshi888) — 把原生 Internal Microphone 引擎接入 DSP 的 Lilu Hook
 - [Sound Open Firmware](https://github.com/thesofproject) — DSP 固件以及本项目所基于的 Linux 驱动
 - [acidanthera](https://github.com/acidanthera) — MacKernelSDK、OpenCore、AppleALC
 

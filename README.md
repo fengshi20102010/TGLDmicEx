@@ -9,10 +9,13 @@
 <p align="center"><a href="https://hits.sh/github.com/labrouss/TGLDmic/"><img src="https://hits.sh/github.com/labrouss/TGLDmic.svg?view=today-total&style=flat-square&label=visits" alt="visits"></a></p>
 
 <p align="center"><b>Tiger Lake & Comet Lake microphone driver for macOS</b><br>
-Internal digital microphones (DMIC) of Intel Tiger Lake and Comet Lake / Cannon Lake laptops (including ThinkPad X1 Carbon Gen 7) via the Intel Smart Sound DSP (SOF)</p>
+Internal digital microphones (DMIC) of Intel Tiger Lake and Comet Lake / Cannon Lake laptops (including ThinkPad X1 Carbon Gen 7 and Lenovo XiaoXin Pro 13 2020) via the Intel Smart Sound DSP (SOF)</p>
 
 > [!NOTE]
 > **This fork is adapted for Comet Lake (CML) ThinkPad X1 Carbon Gen 7 (X1C7) from [labrouss/TGLDmic](https://github.com/labrouss/TGLDmic).** It introduces cAVS 1.8 platform support, dynamic core power gating, dual embedded Intel production SOF v2.2 firmware (`sof-cml.ri` & `sof-tgl.ri`), dynamic input stream allocation, and a Lilu hook that feeds the native Internal Microphone engine.
+
+> [!NOTE]
+> **Where this is maintained.** This repository continues [qqaoshi888/TGLDmicEx](https://github.com/qqaoshi888/TGLDmicEx), which is archived (read-only) and so cannot take pull requests. That repository is in turn a fork of [labrouss/TGLDmic](https://github.com/labrouss/TGLDmic), whose `main` does not contain the Lilu hook this project is built on. Changes such as the **Lenovo XiaoXin Pro 13 2020** support (0.6.5) are therefore published from here. Please use this repository for issues and pull requests.
 
 > Unofficial community project. Not affiliated with or endorsed by Intel, Apple or any laptop vendor.
 
@@ -47,14 +50,15 @@ speakers and headset, and no second audio device is created.
 - Repeated recording sessions; coexists with AppleHDA/AppleALC
 - Lilu hook on `AppleHDAEngine::convertInputSamples`; headset mic and line-in keep AppleHDA's own path
 - Dual architecture support: Intel cAVS 2.5 (Tiger Lake) & cAVS 1.8 (Comet Lake / Cannon Lake / Coffee Lake)
+- 2- and 4-microphone arrays (0.6.5): the pipeline is picked from the PDM microphone count in the ACPI NHLT table; `tgldmicch=2` / `tgldmicch=4` overrides it
 
 ## Compatibility
 | | |
 |---|---|
-| Supported (Comet Lake / CFL) | Intel Smart Sound DSP `8086:02C8`: Comet Lake **LP** (10th-gen Core, e.g. **Lenovo ThinkPad X1 Carbon Gen 7** i7-10710U / i5-10210U)<br>Intel Smart Sound DSP `8086:9DC8`: Cannon Lake / Whiskey Lake **LP** (e.g. ThinkPad X1 Carbon Gen 7 i7-8565U)<br>Intel Smart Sound DSP `8086:06C8`, `8086:A348`: Comet Lake-H, Coffee Lake-H |
+| Supported (Comet Lake / CFL) | Intel Smart Sound DSP `8086:02C8`: Comet Lake **LP** (10th-gen Core, e.g. **Lenovo ThinkPad X1 Carbon Gen 7** i7-10710U / i5-10210U, **Lenovo XiaoXin Pro 13 2020 (82DN)** i7-10710U)<br>Intel Smart Sound DSP `8086:9DC8`: Cannon Lake / Whiskey Lake **LP** (e.g. ThinkPad X1 Carbon Gen 7 i7-8565U)<br>Intel Smart Sound DSP `8086:06C8`, `8086:A348`: Comet Lake-H, Coffee Lake-H |
 | Supported (Tiger Lake) | Intel Smart Sound DSP `8086:A0C8`: Tiger Lake **LP** (11th-gen Core, UP3/UP4)<br>Intel Smart Sound DSP `8086:43C8`: Tiger Lake **H** |
-| Tested hardware | **Lenovo ThinkPad X1 Carbon Gen 7** (Comet Lake i7-10710U, 4 PDM mics, ALC285)<br>**HP EliteBook 840 G8** (Tiger Lake i5-1135G7, 4 PDM mics, ALC285) |
-| macOS | Ventura, Sonoma, Sequoia, Tahoe tested / supported |
+| Tested hardware | **Lenovo XiaoXin Pro 13 2020 (82DN)** (Comet Lake i7-10710U, **2** PDM mics, ALC257): **0.6.5**, macOS 15.8.2 Sequoia<br>**Lenovo ThinkPad X1 Carbon Gen 7** (Comet Lake i7-10710U, 4 PDM mics, ALC285): up to 0.6.4, **not re-tested with 0.6.5**<br>**HP EliteBook 840 G8** (Tiger Lake i5-1135G7, 4 PDM mics, ALC285): up to 0.6.4, **not re-tested with 0.6.5** |
+| macOS | Ventura, Sonoma, Sequoia, Tahoe tested / supported for the earlier machines; the XiaoXin Pro 13 was tested on Sequoia 15.8.2 only |
 | Audio driver | Works next to **AppleALC/AppleHDA** or **HDAUniversal** (speakers and headset stay with them) |
 
 > **Device-id spoof:** OpenCore configs usually spoof the audio controller as `34C8` or `9DC8` for AppleALC.
@@ -82,6 +86,18 @@ Download the kext archive from [Releases](../../releases):
 > the original converter is not called for the internal mic. External inputs (headset mic/line-in)
 > still use AppleHDA's own path. See [docs/INSTALL.md §2](docs/INSTALL.md).
 
+> **v0.6.5, Lenovo XiaoXin Pro 13 2020 (2 microphones):** the DSP boot failed there at "core0 power up" because
+> the firmware leaves `PPCTL.GPROCEN` (the DSP's global processing enable) clear. 0.6.5 sets it for the boot and
+> restores it, powers down the extra DSP cores as Linux does, and adds a 2-microphone pipeline chosen from the
+> ACPI NHLT (`tgldmicch=2|4` forces it). **Only the XiaoXin Pro 13 has been verified with 0.6.5.** The core
+> power-down step changes the boot sequence of every Comet Lake machine, and the pipeline selection runs on
+> every machine, so owners of the ThinkPad X1 Carbon Gen 7 and the EliteBook 840 G8 are asked to report how
+> 0.6.5 behaves. Analysis, evidence and open items: [docs/XIAOXIN-PRO13.md](docs/XIAOXIN-PRO13.md).
+> Boot arguments: [docs/TESTING.md](docs/TESTING.md).
+>
+> Related but separate: after sleep the headphone jack of that laptop came back with low volume and crackling
+> (AppleALC layout 11). A data-only AppleALC patch and a script are in [tools/applealc/](tools/applealc/).
+
 Full steps, troubleshooting and removal: [docs/INSTALL.md](docs/INSTALL.md).
 
 ## How it works
@@ -108,7 +124,11 @@ for the plugin headers and `plugin_start.cpp`):
 
     make -C kext SDK=/path/to/MacKernelSDK
 
-`tools/set-version.sh X.Y.Z` sets the version in every place.
+`tools/set-version.sh X.Y.Z` sets the version in every place. `make -C kext test` runs the host unit test of
+the NHLT parser (no kernel SDK needed).
+
+To publish a release, push a tag named `v<version>` (for example `v0.6.5`): the workflow builds the kext and
+attaches `TGLDmic-<version>-kext.zip` to a GitHub Release.
 
 | Path | What |
 |---|---|
@@ -127,6 +147,8 @@ for the plugin headers and `plugin_start.cpp`):
 
 ## Credits
 - [labrouss](https://github.com/labrouss) - for the original TGLDmic
+- [medkintos](https://github.com/medkintos) - the ThinkPad X1 Carbon Gen 7 / Comet Lake (cAVS 1.8) port
+- [qqaoshi888](https://github.com/qqaoshi888) - the Lilu hook that feeds the native Internal Microphone engine
 - [Sound Open Firmware](https://github.com/thesofproject) — the DSP firmware and the Linux driver this work is based on
 - [acidanthera](https://github.com/acidanthera) — MacKernelSDK, OpenCore, AppleALC
 
