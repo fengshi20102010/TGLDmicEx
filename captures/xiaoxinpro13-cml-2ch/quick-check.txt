@@ -1,0 +1,84 @@
+== 机型 ==
+82DN
+Lenovo XiaoXinPro-13IML 2020
+CLCN32WW.DPC10
+
+== 内核 ==
+Linux ubuntu 7.0.0-31-generic #31~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Mon Aug 10 09:38:02 UTC 2 x86_64 x86_64 x86_64 GNU/Linux
+
+== 音频 PCI 设备 ==
+00:1f.3 Multimedia audio controller [0401]: Intel Corporation Comet Lake PCH-LP cAVS [8086:02c8]
+	Subsystem: Lenovo Comet Lake PCH-LP cAVS [17aa:380f]
+	Kernel driver in use: sof-audio-pci-intel-cnl
+	Kernel modules: snd_soc_avs, snd_sof_pci_intel_cnl, snd_hda_intel
+00:1f.4 SMBus [0c05]: Intel Corporation Comet Lake PCH-LP SMBus Host Controller [8086:02a3]
+	Subsystem: Lenovo Comet Lake PCH-LP SMBus Host Controller [17aa:3810]
+
+== SOF / DMIC / NHLT 内核日志 ==
+[    0.023908] ACPI: NHLT 0x0000000099B31000 0017F0 (v00 LENOVO CB-01    00000001      01000013)
+[    0.024018] ACPI: Reserving NHLT table memory at [mem 0x99b31000-0x99b327ef]
+[    0.085973] software IO TLB: area num 16.
+[    1.742278] pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+[    1.918656] PCI-DMA: Using software bounce buffering for IO (SWIOTLB)
+[    1.918659] software IO TLB: mapped [mem 0x000000009291e000-0x000000009691e000] (64MB)
+[    2.420453] integrity: Loaded X.509 cert 'Microsoft Windows Production PCA 2011: a92902398e16c49778cd90f99e4f9ae17c55af53'
+[    2.420533] integrity: Loaded X.509 cert 'Microsoft Corporation UEFI CA 2011: 13adbf4309bd82709c8cd54f316ed522988a1bd4'
+[   26.347815] snd_soc_avs 0000:00:1f.3: Digital mics found on Skylake+ platform, using SOF driver
+[   26.574962] sof-audio-pci-intel-cnl 0000:00:1f.3: enabling device (0000 -> 0002)
+[   26.575333] sof-audio-pci-intel-cnl 0000:00:1f.3: DSP detected with PCI class/subclass/prog-if 0x040100
+[   26.575478] sof-audio-pci-intel-cnl 0000:00:1f.3: bound 0000:00:02.0 (ops intel_audio_component_bind_ops [i915])
+[   26.582544] sof-audio-pci-intel-cnl 0000:00:1f.3: use msi interrupt mode
+[   26.670780] sof-audio-pci-intel-cnl 0000:00:1f.3: hda codecs found, mask 5
+[   26.670794] sof-audio-pci-intel-cnl 0000:00:1f.3: using HDA machine driver skl_hda_dsp_generic now
+[   26.670800] sof-audio-pci-intel-cnl 0000:00:1f.3: BT link detected in NHLT tables: 0x0
+[   26.670808] sof-audio-pci-intel-cnl 0000:00:1f.3: DMICs detected in NHLT tables: 2
+[   26.733295] sof-audio-pci-intel-cnl 0000:00:1f.3: Firmware paths/files for ipc type 0:
+[   26.733308] sof-audio-pci-intel-cnl 0000:00:1f.3:  Firmware file:     intel/sof/sof-cml.ri
+[   26.733313] sof-audio-pci-intel-cnl 0000:00:1f.3:  Topology file:     intel/sof-tplg/sof-hda-generic-2ch.tplg
+[   26.740498] sof-audio-pci-intel-cnl 0000:00:1f.3: Firmware info: version 2:2:0-57864
+[   26.740509] sof-audio-pci-intel-cnl 0000:00:1f.3: Firmware: ABI 3:22:1 Kernel ABI 3:23:1
+[   26.854940] sof-audio-pci-intel-cnl 0000:00:1f.3: Firmware info: version 2:2:0-57864
+[   26.854954] sof-audio-pci-intel-cnl 0000:00:1f.3: Firmware: ABI 3:22:1 Kernel ABI 3:23:1
+[   26.880286] sof-audio-pci-intel-cnl 0000:00:1f.3: loading topology: intel/sof-tplg/sof-hda-generic-2ch.tplg
+[   26.880864] sof-audio-pci-intel-cnl 0000:00:1f.3: Topology: ABI 3:22:1 Kernel ABI 3:23:1
+[   26.881731] skl_hda_dsp_generic skl_hda_dsp_generic: ASoC: Parent card not yet available, widget card binding deferred
+[   26.910685] snd_hda_codec_alc269 ehdaudio0D0: ALC257: picked fixup  for PCI SSID 17aa:0000
+[   26.911176] snd_hda_codec_alc269 ehdaudio0D0: autoconfig for ALC257: line_outs=1 (0x14/0x0/0x0/0x0/0x0) type:speaker
+[   26.911186] snd_hda_codec_alc269 ehdaudio0D0:    speaker_outs=0 (0x0/0x0/0x0/0x0/0x0)
+[   26.911191] snd_hda_codec_alc269 ehdaudio0D0:    hp_outs=1 (0x21/0x0/0x0/0x0/0x0)
+[   26.911197] snd_hda_codec_alc269 ehdaudio0D0:    mono: mono_out=0x0
+[   26.911201] snd_hda_codec_alc269 ehdaudio0D0:    inputs:
+[   26.911205] snd_hda_codec_alc269 ehdaudio0D0:      Mic=0x19
+[   26.964130] input: sof-hda-dsp Mic as /devices/pci0000:00/0000:00:1f.3/skl_hda_dsp_generic/sound/card0/input17
+[   26.964289] input: sof-hda-dsp Headphone as /devices/pci0000:00/0000:00:1f.3/skl_hda_dsp_generic/sound/card0/input18
+[   26.964412] input: sof-hda-dsp HDMI/DP,pcm=3 as /devices/pci0000:00/0000:00:1f.3/skl_hda_dsp_generic/sound/card0/input19
+[   26.964599] input: sof-hda-dsp HDMI/DP,pcm=4 as /devices/pci0000:00/0000:00:1f.3/skl_hda_dsp_generic/sound/card0/input20
+[   26.964772] input: sof-hda-dsp HDMI/DP,pcm=5 as /devices/pci0000:00/0000:00:1f.3/skl_hda_dsp_generic/sound/card0/input21
+
+== 录音设备 ==
+**** List of CAPTURE Hardware Devices ****
+card 0: sofhdadsp [sof-hda-dsp], device 0: HDA Analog (*) []
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 0: sofhdadsp [sof-hda-dsp], device 6: DMIC (*) []
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 0: sofhdadsp [sof-hda-dsp], device 7: DMIC16kHz (*) []
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+
+== 声卡 ==
+ 0 [sofhdadsp      ]: sof-hda-dsp - sof-hda-dsp
+                      LENOVO-82DN-LenovoXiaoXinPro_13IML2020-LenovoXiaoXinPro_13IML2020
+
+== hw:0,6 参数 ==
+FORMAT:  S16_LE S24_LE S32_LE
+SUBFORMAT:  STD MSBITS_MAX
+CHANNELS: 2
+RATE: 48000
+
+== hw:0,7 参数 ==
+FORMAT:  S16_LE S24_LE S32_LE
+SUBFORMAT:  STD MSBITS_MAX
+CHANNELS: 2
+RATE: 16000

@@ -1,0 +1,292 @@
+[  265.099249] sof-audio-pci-intel-cnl 0000:00:1f.3: Turning i915 HDAC power 1
+[  265.103592] sof-audio-pci-intel-cnl 0000:00:1f.3: Debug PCIR: 00000000 at  00000044
+[  265.106643] sof-audio-pci-intel-cnl 0000:00:1f.3: Debug PCIR: 00000040 at  00000048
+[  265.106671] sof-audio-pci-intel-cnl 0000:00:1f.3: Debug PCIW: 00000000 at  00000048
+[  265.110083] sof-audio-pci-intel-cnl 0000:00:1f.3: Debug PCIR: 00000000 at  00000048
+[  265.110133] sof-audio-pci-intel-cnl 0000:00:1f.3: Debug PCIW: 00000040 at  00000048
+[  265.111744] sof-audio-pci-intel-cnl 0000:00:1f.3: Turning i915 HDAC power 0
+[  265.111774] sof-audio-pci-intel-cnl 0000:00:1f.3: Current DSP power state: D0I0
+[  265.111780] sof-audio-pci-intel-cnl 0000:00:1f.3: Booting DSP firmware
+[  265.111784] sof-audio-pci-intel-cnl 0000:00:1f.3: fw_state change: 0 -> 2
+[  265.111790] sof-audio-pci-intel-cnl 0000:00:1f.3: loading firmware
+[  265.111794] sof-audio-pci-intel-cnl 0000:00:1f.3: fw_state change: 2 -> 3
+[  265.111813] sof-audio-pci-intel-cnl 0000:00:1f.3: Debug PCIR: 00000002 at  00000048
+[  265.111827] sof-audio-pci-intel-cnl 0000:00:1f.3: Debug PCIW: 00000000 at  00000048
+[  265.111836] sof-audio-pci-intel-cnl 0000:00:1f.3: Debug PCIR: 00000000 at  00000044
+[  265.111844] sof-audio-pci-intel-cnl 0000:00:1f.3: Debug PCIW: 00000004 at  00000044
+[  265.111848] sof-audio-pci-intel-cnl 0000:00:1f.3: booting DSP firmware
+[  265.111853] sof-audio-pci-intel-cnl 0000:00:1f.3: IMR restore supported, booting from IMR directly
+[  265.111870] sof-audio-pci-intel-cnl 0000:00:1f.3: FW Poll Status: reg[0x4]=0xf0f0f0f successful
+[  265.111922] sof-audio-pci-intel-cnl 0000:00:1f.3: FW Poll Status: reg[0x4]=0xf0f0f0e successful
+[  265.111943] sof-audio-pci-intel-cnl 0000:00:1f.3: unstall/run core: core_mask = 1
+[  265.111964] sof-audio-pci-intel-cnl 0000:00:1f.3: DSP core(s) enabled? 1 : core_mask 1
+[  265.112509] sof-audio-pci-intel-cnl 0000:00:1f.3: FW Poll Status: reg[0xd4]=0x80000000 successful
+[  265.112531] sof-audio-pci-intel-cnl 0000:00:1f.3: FW Poll Status: reg[0x4]=0xf0f0e0e successful
+[  265.112540] sof-audio-pci-intel-cnl 0000:00:1f.3: FW Poll Status: reg[0x4]=0x1010e0e successful
+[  265.112548] sof-audio-pci-intel-cnl 0000:00:1f.3: DSP core(s) enabled? 0 : core_mask e
+[  265.112558] sof-audio-pci-intel-cnl 0000:00:1f.3: FW Poll Status: reg[0x80000]=0x5 successful
+[  265.127601] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc rx: 0x70000000
+[  265.127616] sof-audio-pci-intel-cnl 0000:00:1f.3: DSP is ready 0x70000000 offset 0x81000
+[  265.127623] sof-audio-pci-intel-cnl 0000:00:1f.3: fw_state change: 3 -> 6
+[  265.127633] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc rx done: 0x70000000
+[  265.127714] sof-audio-pci-intel-cnl 0000:00:1f.3: firmware boot complete
+[  265.127724] sof-audio-pci-intel-cnl 0000:00:1f.3: fw_state change: 6 -> 7
+[  265.127747] sof-audio-pci-intel-cnl 0000:00:1f.3: Debug PCIR: 00000000 at  00000048
+[  265.127766] sof-audio-pci-intel-cnl 0000:00:1f.3: Debug PCIW: 00000002 at  00000048
+[  265.127776] sof-audio-pci-intel-cnl 0000:00:1f.3: Debug PCIR: 00000004 at  00000044
+[  265.127784] sof-audio-pci-intel-cnl 0000:00:1f.3: Debug PCIW: 00000000 at  00000044
+[  265.127808] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x40020000
+[  265.127971] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x40020000
+[  265.127982] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 68
+[  265.127993] Message payload: 00000000: 00000000 00000000 00000000 00000000
+[  265.128002] Message payload: 00000010: 00000000 00000000 00000000 00000000
+[  265.128010] Message payload: 00000020: 00000000 00000000 00000000 00000000
+[  265.128018] Message payload: 00000030: 00000000 00000000 00000000 00000000
+[  265.128023] Message payload: 00000040: 00000000
+[  265.128050] sof-audio-pci-intel-cnl 0000:00:1f.3: pcm6 (DMIC), dir 1: Entry: open
+[  265.128076] sof-audio-pci-intel-cnl 0000:00:1f.3: pcm6 (DMIC), dir 1: period bytes min 192, max 16384
+[  265.128086] sof-audio-pci-intel-cnl 0000:00:1f.3: pcm6 (DMIC), dir 1: period count min 2, max 16
+[  265.128095] sof-audio-pci-intel-cnl 0000:00:1f.3: pcm6 (DMIC), dir 1: buffer bytes max 65536
+[  265.128453] sof-audio-pci-intel-cnl 0000:00:1f.3: pcm6 (DMIC), dir 1: Entry: hw_params
+[  265.128477] sof-audio-pci-intel-cnl 0000:00:1f.3: FW Poll Status: reg[0x80]=0x40000 successful
+[  265.128504] sof-audio-pci-intel-cnl 0000:00:1f.3: FW Poll Status: reg[0x80]=0x40000 successful
+[  265.128512] sof-audio-pci-intel-cnl 0000:00:1f.3: period_bytes: 0x4000, bufsize: 0x10000
+[  265.128517] sof-audio-pci-intel-cnl 0000:00:1f.3: periods: 4
+[  265.128729] sof-audio-pci-intel-cnl 0000:00:1f.3: pcm6 (DMIC), dir 1: Entry: prepare
+[  265.128737] sof-audio-pci-intel-cnl 0000:00:1f.3: pcm6 (DMIC), dir 1: Entry: hw_params
+[  265.128756] sof-audio-pci-intel-cnl 0000:00:1f.3: FW Poll Status: reg[0x80]=0x140000 successful
+[  265.128779] sof-audio-pci-intel-cnl 0000:00:1f.3: FW Poll Status: reg[0x80]=0x40000 successful
+[  265.128787] sof-audio-pci-intel-cnl 0000:00:1f.3: period_bytes: 0x4000, bufsize: 0x10000
+[  265.128792] sof-audio-pci-intel-cnl 0000:00:1f.3: periods: 4
+[  265.128809] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x30100000
+[  265.129029] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x30100000
+[  265.129036] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 40
+[  265.129043] Message payload: 00000000: 00000039 0000000a 00000038 00000000
+[  265.129048] Message payload: 00000010: 000003e8 00000000 00001388 00000000
+[  265.129053] Message payload: 00000020: 00000000 00000001
+[  265.129060] sof-audio-pci-intel-cnl 0000:00:1f.3: widget PIPELINE.10.DMIC0.IN setup complete
+[  265.129066] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x30010000
+[  265.129382] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x30010000
+[  265.129387] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 88
+[  265.129392] Message payload: 00000000: 00000038 00000002 0000000a 00000000
+[  265.129396] Message payload: 00000010: 00000010 00000024 00000000 00000002
+[  265.129400] Message payload: 00000020: 00000000 00000000 00000002 00000000
+[  265.129404] Message payload: 00000030: 00000000 00000000 00000001 00000000
+[  265.129409] Message payload: 00000040: 00000002 00000000 c2b00d27 4150ffbc
+[  265.129413] Message payload: 00000050: 5c241aa5 4be5c579
+[  265.129417] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x80010000
+[  265.129821] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x80010000
+[  265.129826] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 208
+[  265.129831] Message payload: 00000000: 00000002 00000000 01000000 00000000
+[  265.129835] Message payload: 00000010: 00000000 00000000 00000000 00000000
+[  265.129839] Message payload: 00000020: 00000000 00000000 00000000 00000000
+[  265.129844] Message payload: 00000030: 00000001 00249f00 00493e00 0000bb80
+[  265.129848] Message payload: 00000040: 00000000 00200020 003c0028 00000001
+[  265.129852] Message payload: 00000050: 00000000 00000000 000000c8 00000000
+[  265.129856] Message payload: 00000060: 00000000 00000000 00000000 00000000
+[  265.129860] Message payload: 00000070: 00000000 00010000 00000001 00000000
+[  265.129865] Message payload: 00000080: 00000000 00000000 00000000 00000000
+[  265.129869] Message payload: 00000090: 00000000 00000000 00000000 00000000
+[  265.129873] Message payload: 000000a0: 00000000 00000000 00000000 00000000
+[  265.129894] Message payload: 000000b0: 00000000 00000000 00000000 00000000
+[  265.129901] Message payload: 000000c0: 00000000 00000000 00000000 00000000
+[  265.129909] sof-audio-pci-intel-cnl 0000:00:1f.3: widget DMIC0.IN setup complete
+[  265.129919] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x30200000
+[  265.130051] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x30200000
+[  265.130058] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 36
+[  265.130063] Message payload: 00000000: 00000037 0000000c 0000000a 00000000
+[  265.130067] Message payload: 00000010: 00000000 00000300 00000071 00000000
+[  265.130071] Message payload: 00000020: 00000000
+[  265.130076] sof-audio-pci-intel-cnl 0000:00:1f.3: widget BUF10.2 setup complete
+[  265.130081] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x30010000
+[  265.130303] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x30010000
+[  265.130315] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 196
+[  265.130323] Message payload: 00000000: 00000034 0000000d 0000000a 00000000
+[  265.130330] Message payload: 00000010: 00000010 00000024 00000000 00000002
+[  265.130335] Message payload: 00000020: 00000002 00000000 00000002 00000000
+[  265.130339] Message payload: 00000030: 00000000 00000000 00000058 00000000
+[  265.130343] Message payload: 00000040: 00000000 00000000 00000000 00000000
+[  265.130347] Message payload: 00000050: 00000000 00000000 00000000 00000058
+[  265.130351] Message payload: 00000060: 00000002 00000001 00000000 00000000
+[  265.130355] Message payload: 00000070: 00000000 00000000 00000000 00000000
+[  265.130359] Message payload: 00000080: 00000001 00000001 00000000 00000000
+[  265.130364] Message payload: 00000090: 00000000 00000000 c078df4c 7f86ae23
+[  265.130368] Message payload: 000000a0: 1ff51b12 c015c9db 1ff51b12 fffffffc
+[  265.130373] Message payload: 000000b0: 00004fd0 5150c0e6 4ec827f9 05c75183
+[  265.130376] Message payload: 000000c0: 2fd142b6
+[  265.130384] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x50030000
+[  265.130747] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x50030000
+[  265.130753] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 204
+[  265.130758] Message payload: 00000000: 00000000 00000034 00000005 00000003
+[  265.130763] Message payload: 00000010: 00000000 00000000 00000000 00000000
+[  265.130767] Message payload: 00000020: 00000000 00000000 00000000 00000000
+[  265.130771] Message payload: 00000030: 00000058 00000000 00000000 00000000
+[  265.130775] Message payload: 00000040: 00000000 00000000 00000000 00000000
+[  265.130779] Message payload: 00000050: 00000000 00464f53 00000000 00000058
+[  265.130783] Message payload: 00000060: 0300e000 00000000 00000000 00000000
+[  265.130788] Message payload: 00000070: 00000000 00000058 00000002 00000001
+[  265.130792] Message payload: 00000080: 00000000 00000000 00000000 00000000
+[  265.130796] Message payload: 00000090: 00000000 00000000 00000001 00000001
+[  265.130800] Message payload: 000000a0: 00000000 00000000 00000000 00000000
+[  265.130804] Message payload: 000000b0: c078df4c 7f86ae23 1ff51b12 c015c9db
+[  265.130808] Message payload: 000000c0: 1ff51b12 fffffffc 00004fd0
+[  265.130813] sof-audio-pci-intel-cnl 0000:00:1f.3: widget EQIIR10.0 setup complete
+[  265.130819] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x30200000
+[  265.130937] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x30200000
+[  265.130947] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 36
+[  265.130957] Message payload: 00000000: 00000036 0000000c 0000000a 00000000
+[  265.130966] Message payload: 00000010: 00000000 00000300 00000071 00000000
+[  265.130973] Message payload: 00000020: 00000000
+[  265.130981] sof-audio-pci-intel-cnl 0000:00:1f.3: widget BUF10.1 setup complete
+[  265.130991] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x30010000
+[  265.131138] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x30010000
+[  265.131148] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 92
+[  265.131156] Message payload: 00000000: 00000033 00000005 0000000a 00000000
+[  265.131165] Message payload: 00000010: 00000010 00000024 00000000 00000002
+[  265.131172] Message payload: 00000020: 00000002 00000000 00000002 00000000
+[  265.131180] Message payload: 00000030: 00000000 00000000 00000002 00000000
+[  265.131188] Message payload: 00000040: 000a004a 00000000 000000fa b77e677e
+[  265.131196] Message payload: 00000050: 41885ff4 a8fb14af 8286bfbd
+[  265.131207] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x50010000
+[  265.131431] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x50010000
+[  265.131437] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 100
+[  265.131442] Message payload: 00000000: 00000000 00000033 00000001 00000002
+[  265.131446] Message payload: 00000010: 00000001 00000000 00000000 00000000
+[  265.131450] Message payload: 00000020: 00000000 00000000 00000000 00000000
+[  265.131455] Message payload: 00000030: 00000002 00000000 00000000 00000000
+[  265.131459] Message payload: 00000040: 00000000 00000000 00000000 00000000
+[  265.131463] Message payload: 00000050: 00000000 00000000 00000001 00000001
+[  265.131466] Message payload: 00000060: 00000001
+[  265.131471] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x50010000
+[  265.131778] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x50010000
+[  265.131783] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 100
+[  265.131787] Message payload: 00000000: 00000000 00000033 00000001 00000000
+[  265.131792] Message payload: 00000010: 00000000 00000000 00000000 00000000
+[  265.131796] Message payload: 00000020: 00000000 00000000 00000000 00000000
+[  265.131800] Message payload: 00000030: 00000002 00000000 00000000 00000000
+[  265.131804] Message payload: 00000040: 00000000 00000000 00000000 00000000
+[  265.131808] Message payload: 00000050: 00000000 00000000 000a004a 00000001
+[  265.131812] Message payload: 00000060: 000a004a
+[  265.131816] sof-audio-pci-intel-cnl 0000:00:1f.3: widget Dmic0 setup complete
+[  265.131821] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x30200000
+[  265.132099] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x30200000
+[  265.132110] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 36
+[  265.132118] Message payload: 00000000: 00000035 0000000c 0000000a 00000000
+[  265.132125] Message payload: 00000010: 00000000 00000300 00000071 00000000
+[  265.132129] Message payload: 00000020: 00000000
+[  265.132135] sof-audio-pci-intel-cnl 0000:00:1f.3: widget BUF10.0 setup complete
+[  265.132142] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x30010000
+[  265.132382] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x30010000
+[  265.132388] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 84
+[  265.132393] Message payload: 00000000: 00000032 00000001 0000000a 00000000
+[  265.132398] Message payload: 00000010: 00000010 00000024 00000000 00000000
+[  265.132402] Message payload: 00000020: 00000002 00000000 00000000 00000000
+[  265.132406] Message payload: 00000030: 00000000 00000000 00000001 00000000
+[  265.132410] Message payload: 00000040: 00000000 8b9d100c 418f6d78 e8e0a390
+[  265.132414] Message payload: 00000050: 2b85d005
+[  265.132418] sof-audio-pci-intel-cnl 0000:00:1f.3: widget PCM6C setup complete
+[  265.132425] sof-audio-pci-intel-cnl 0000:00:1f.3: setting up route BUF10.0 -> PCM6C
+[  265.132430] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x30030000
+[  265.132664] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x30030000
+[  265.132669] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 8
+[  265.132674] Message payload: 00000000: 00000035 00000032
+[  265.132678] sof-audio-pci-intel-cnl 0000:00:1f.3: setting up route Dmic0 -> BUF10.0
+[  265.132683] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x30030000
+[  265.132872] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x30030000
+[  265.132894] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 8
+[  265.132902] Message payload: 00000000: 00000033 00000035
+[  265.132909] sof-audio-pci-intel-cnl 0000:00:1f.3: setting up route BUF10.1 -> Dmic0
+[  265.132917] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x30030000
+[  265.133181] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x30030000
+[  265.133192] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 8
+[  265.133199] Message payload: 00000000: 00000036 00000033
+[  265.133207] sof-audio-pci-intel-cnl 0000:00:1f.3: setting up route EQIIR10.0 -> BUF10.1
+[  265.133213] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x30030000
+[  265.133407] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x30030000
+[  265.133412] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 8
+[  265.133417] Message payload: 00000000: 00000034 00000036
+[  265.133422] sof-audio-pci-intel-cnl 0000:00:1f.3: setting up route BUF10.2 -> EQIIR10.0
+[  265.133427] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x30030000
+[  265.133558] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x30030000
+[  265.133563] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 8
+[  265.133567] Message payload: 00000000: 00000037 00000034
+[  265.133572] sof-audio-pci-intel-cnl 0000:00:1f.3: setting up route DMIC0.IN -> BUF10.2
+[  265.133576] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x30030000
+[  265.133677] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x30030000
+[  265.133682] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 8
+[  265.133685] Message payload: 00000000: 00000038 00000037
+[  265.133695] sof-audio-pci-intel-cnl 0000:00:1f.3: tplg: complete pipeline PIPELINE.10.DMIC0.IN id 57
+[  265.133700] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x30130000
+[  265.134311] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x30130000
+[  265.134323] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 4
+[  265.134330] Message payload: 00000000: 00000039
+[  265.134338] sof-audio-pci-intel-cnl 0000:00:1f.3: pcm6 (DMIC), dir 1: stream_tag 1
+[  265.134346] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x60010000
+[  265.134792] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x60010000
+[  265.134798] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 100
+[  265.134803] Message payload: 00000000: 00000032 00000000 00000000 00000000
+[  265.134809] Message payload: 00000010: 00000054 00000000 ffeff000 00000010
+[  265.134814] Message payload: 00000020: 00010000 00000000 00000000 00000000
+[  265.134819] Message payload: 00000030: 00000001 00000002 00000000 0000bb80
+[  265.134823] Message payload: 00000040: 00020001 00040004 00004000 00000001
+[  265.134827] Message payload: 00000050: 00000000 00000000 00000000 00000000
+[  265.134831] Message payload: 00000060: 00000000
+[  265.134835] sof-audio-pci-intel-cnl 0000:00:1f.3: pcm: stream dir 1, posn mailbox offset is 790528
+[  265.135069] sof-audio-pci-intel-cnl 0000:00:1f.3: pcm6 (DMIC), dir 1: Entry: trigger (cmd: 1)
+[  265.135627] sof-audio-pci-intel-cnl 0000:00:1f.3: FW Poll Status: reg[0x80]=0x2014001e successful
+[  265.135635] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x60040000
+[  265.136798] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x60040000
+[  265.136805] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 4
+[  265.136811] Message payload: 00000000: 00000032
+[  273.159224] sof-audio-pci-intel-cnl 0000:00:1f.3: pcm6 (DMIC), dir 1: Entry: trigger (cmd: 0)
+[  273.159242] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x60050000
+[  273.159847] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x60050000
+[  273.159861] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 4
+[  273.159869] Message payload: 00000000: 00000032
+[  273.159939] sof-audio-pci-intel-cnl 0000:00:1f.3: FW Poll Status: reg[0x80]=0x20140000 successful
+[  273.159965] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x60030000
+[  273.160318] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x60030000
+[  273.160330] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 4
+[  273.160336] Message payload: 00000000: 00000032
+[  273.160444] sof-audio-pci-intel-cnl 0000:00:1f.3: pcm6 (DMIC), dir 1: Entry: hw_free
+[  273.160483] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x30020000
+[  273.160777] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x30020000
+[  273.160783] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 4
+[  273.160788] Message payload: 00000000: 00000038
+[  273.160793] sof-audio-pci-intel-cnl 0000:00:1f.3: widget DMIC0.IN freed
+[  273.160800] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x30210000
+[  273.161043] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x30210000
+[  273.161052] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 4
+[  273.161056] Message payload: 00000000: 00000037
+[  273.161062] sof-audio-pci-intel-cnl 0000:00:1f.3: widget BUF10.2 freed
+[  273.161070] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x30020000
+[  273.161339] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x30020000
+[  273.161350] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 4
+[  273.161357] Message payload: 00000000: 00000034
+[  273.161363] sof-audio-pci-intel-cnl 0000:00:1f.3: widget EQIIR10.0 freed
+[  273.161372] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x30210000
+[  273.161575] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x30210000
+[  273.161580] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 4
+[  273.161585] Message payload: 00000000: 00000036
+[  273.161589] sof-audio-pci-intel-cnl 0000:00:1f.3: widget BUF10.1 freed
+[  273.161595] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x30020000
+[  273.161799] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x30020000
+[  273.161804] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 4
+[  273.161808] Message payload: 00000000: 00000033
+[  273.161812] sof-audio-pci-intel-cnl 0000:00:1f.3: widget Dmic0 freed
+[  273.161817] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x30210000
+[  273.162117] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x30210000
+[  273.162129] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 4
+[  273.162135] Message payload: 00000000: 00000035
+[  273.162142] sof-audio-pci-intel-cnl 0000:00:1f.3: widget BUF10.0 freed
+[  273.162151] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x30020000
+[  273.162376] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x30020000
+[  273.162382] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 4
+[  273.162386] Message payload: 00000000: 00000032
+[  273.162392] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx: 0x30110000
+[  273.163147] sof-audio-pci-intel-cnl 0000:00:1f.3: ipc tx succeeded: 0x30110000
+[  273.163159] sof-audio-pci-intel-cnl 0000:00:1f.3: Size of payload following the header: 4
+[  273.163166] Message payload: 00000000: 00000039
+[  273.163172] sof-audio-pci-intel-cnl 0000:00:1f.3: widget PIPELINE.10.DMIC0.IN freed
+[  273.163178] sof-audio-pci-intel-cnl 0000:00:1f.3: widget PCM6C freed
+[  273.163431] sof-audio-pci-intel-cnl 0000:00:1f.3: pcm6 (DMIC), dir 1: Entry: close
