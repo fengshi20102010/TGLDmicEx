@@ -190,15 +190,54 @@ ioreg -c TGLDmic -r -l -w0 | grep -oE '"Log" = \(.*' | sed 's/","/\n/g' | grep -
 ### 试听文件
 `~/Downloads/tgldmic-listen/`：`v3_raw_stereo_as_recorded.wav`（原样）、`v0_original_L.wav`（仅左声道）、`v1_mono.wav`（(L+R)/2）、`v2_mono_hp120.wav`（(L+R)/2 + 120 Hz 高通）。后三个已按峰值归一化到 0.9，所以响度不能直接比较，只比较底噪和清晰度。
 
+## 附：耳机睡眠唤醒后声音小、爆音（AppleALC layout 11，与 TGLDmic 无关）
+
+和内置麦克风驱动无关，只是同一台机器上顺带处理的问题，补丁放在 `tools/applealc/`，不影响 kext。
+
+**现象**：插着耳机睡眠（本机是 S0 低功耗，日志为 `Wake from Deep Idle`），唤醒后耳机声音小、有爆音；需要在声音菜单里切换输入，或重新插拔耳机才恢复。
+
+**机器**：ALC257（`0x10ec0257`），EFI 里 `layout-id = 11`（AppleALC 里的名字是 `MacPeet - Realtek ALC257 for Lenovo T480`），AppleALC 1.9.8，macOS 15.8.2，没有装 ALCPlugFix。
+
+**原因（有依据的推断，没有读到 codec 寄存器）**
+- AppleALC 自带唤醒重发：音频驱动进入睡眠态（0）后再回到空闲/活动态（1/2）时，把布局里的 `WakeConfigData` 重新发给 codec（`kern_alc.cpp` 的 `AlcEnabler::performPowerChange`）。条件是该条目 `WakeVerbReinit = true`。
+- layout 11 开了 `WakeVerbReinit`，但 `WakeConfigData` 只有 `01470c02`（引脚 0x14，扬声器功放使能），**没有重发耳机孔引脚 0x19**。
+- 同一个 codec 的 layout 86、96、97 的 `WakeConfigData` 已经包含 `01970725`（`0x19 SET_PIN_WIDGET_CONTROL 0x25`）。ALC257 的 ThinkPad T480 上有人报告过同样的症状，手动发这条命令就恢复：
+  [Olarila: small sound and noise jack audio after wake up from sleep](https://olarila.com/topic/24434-small-sound-and-noise-jack-audio-after-wake-up-from-sleep/)、
+  [T480-OpenCore-Hackintosh issue 10](https://github.com/EETagent/T480-OpenCore-Hackintosh/issues/10)。
+
+**修复**：给 layout 11 的 `WakeConfigData` 追加 `01970725`。这是 `AppleALC.kext/Contents/Info.plist` 里的数据，不需要重新编译，程序文件原样不动。
+
+```bash
+python3 tools/applealc/patch-wake.py /Volumes/EFI/EFI/OC/Kexts/AppleALC.kext --backup-dir ~/alc-backup   # 应用
+python3 tools/applealc/patch-wake.py /Volumes/EFI/EFI/OC/Kexts/AppleALC.kext --check                     # 0 已应用，3 未应用
+python3 tools/applealc/patch-wake.py /Volumes/EFI/EFI/OC/Kexts/AppleALC.kext --revert                    # 回退
+python3 tools/applealc/patch-wake.py ... --value 0x24                                                    # 换成 0x24（layout 101 用的值）
+```
+
+脚本只改这一个值，写之前会逐项对比整个 plist，其他值有任何变化就中止；已是目标状态时不做任何事；原文件先备份。
+想从源码编译 AppleALC 的话，`tools/applealc/applealc-1.9.8-layout11-wake-0x19.patch` 是同样的一行改动，在全新的 1.9.8 上 `git apply` 通过，得到的 663 条 `HDAConfigDefault` 与打过补丁的 kext 逐条一致。
+
+**验证（macOS 15.8.2，小新 Pro 13，插着耳机）**
+- 两次睡眠唤醒（约 12 分钟、约 55 分钟），用户听感都正常，没有再切换输入或重新插拔。
+- 日志：睡眠前音频驱动 2 → 0，唤醒时 0 → 1（约 0.65 s）；AppleALC 的 `alc-sleep-status` 唤醒后回到 `No`，这个标志只有重发执行后才会清除；没有任何 AppleALC 报错。
+- **没有验证**：codec 引脚 0x19 的实际寄存器值（需要 `alcverbs=1` 加 AppleALC 自带的 `alc-verb` 工具）、唤醒重发里具体哪一个值起了作用、不同睡眠时长、AppleALC 以外的 macOS 版本。
+
+**注意**
+- 更新 AppleALC 后补丁会丢，重新运行脚本即可（用 `--check` 判断）。
+- `0x25` 与 layout 86/96/97 一致；layout 101 用 `0x24`。本机 `0x25` 够用，没有试过 `0x24`。
+- 这个改动改的是 layout 11，该布局的主要用户是 T480，他们另有 layout 86。**没有提交给 AppleALC 上游**，上游可能更希望新增一个布局而不是改 layout 11。
+
 ## 待办（TODO）
 
 按优先级：
 
 1. **核心断电（问题 4）加开关并验证是否必须。** 目前 Comet Lake 机器默认都会执行 `coreResetPowerDown()`，没有 boot-arg 可以关闭，也没有单独验证过“不加这一步是否也能启动”。计划：新增 `tgldmiccorepd=0` 开关；在小新上关闭后测试 DSP 启动与录音。关闭也正常 → 默认改为关闭（其他机器行为不变）；关闭不行 → 再设计判断条件。
 2. **回归验证 X1C7（Comet Lake，4 麦）和 EliteBook 840 G8（Tiger Lake，4 麦）。** 本 MR 只在小新 Pro 13（82DN，macOS 15.8.2）上做过实机验证，其他机型是按代码推理，没有实测。需要这两类机器的用户帮忙确认：DSP 能启动、`DmicChannels=4`、`DmicSource="NHLT"`、录音正常。
-3. **版本号提交单独处理。** 0.6.4 → 0.6.5 单独放在最后一个提交，维护者可以直接丢弃或改成自己的版本号。
+3. **版本号提交单独处理。** 0.6.4 → 0.6.5 单独放在 `chore(release): bump version to 0.6.5` 这一个提交里，维护者可以直接丢弃或改成自己的版本号。
 4. **新增的 `com.apple.iokit.IOACPIFamily` 依赖只在 macOS 15.8.2 上验证过。** 在 Ventura / Sonoma / Sequoia 其他小版本上需要确认能正常加载（解析不了依赖会导致整个 kext 不加载）。
 5. **CI：确认 `cp -RL` 的改动在 GitHub Actions（`macos-15-intel`）上通过。** 本地验证过，没有看过 CI 运行结果。
 6. **（可选）音质：左右混音。** 见“音质调查”。安静段噪声在左右声道间反相，(L+R)/2 可把信噪比从约 11 dB 提到约 22 dB。做成 `tgldmicmix=mono` 开关，默认保持立体声。需要先确认噪声来源（硬件固有、DSP 配置，还是 Hook），可用 `-tgldmiccap` 绕过 Hook 取一秒 DSP 数据对比，或在 Linux 下录一段真正安静的音频。
 7. **（可选）采样率。** 每次开始录音引擎都会回到 44.1 kHz，经线性重采样；数据显示这不是底噪的主因，但原生 48 kHz 仍是最直接的路径。可以研究让 Hook 在引擎设置 48 kHz 时跳过重采样的路径是否已经覆盖（`injectStep == 1.0`）。
 8. **DSP 电源管理优雅化。** 沿用上游 README 的“后期优化”：目前靠 100 ms 定时器轮询判断，后续可考虑 Hook AppleHDA 的麦克风启停 API。
+9. **AppleALC 的耳机唤醒补丁是否提交上游。** 见上文“附：耳机睡眠唤醒后声音小、爆音”。改的是 layout 11（T480 用户的布局），上游可能更希望新增一个布局（例如克隆 layout 11 并加上唤醒命令）；需要先和 AppleALC 维护者确认，目前只在本机验证过。
+10. **（可选）直接读耳机引脚状态作证据。** 加 `alcverbs=1`，用 AppleALC 仓库里的 `alc-verb` 读引脚 0x19 的 `GET_PIN_WIDGET_CONTROL`（verb 0xF07），对比唤醒前后和打补丁前后。目前只有日志和听感，没有寄存器级的证据。

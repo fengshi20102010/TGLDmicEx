@@ -1,0 +1,13 @@
+diff --git a/Resources/PinConfigs.kext/Contents/Info.plist b/Resources/PinConfigs.kext/Contents/Info.plist
+index 8dd7698..442d3a1 100644
+--- a/Resources/PinConfigs.kext/Contents/Info.plist
++++ b/Resources/PinConfigs.kext/Contents/Info.plist
+@@ -2638,7 +2638,7 @@
+ 					<key>LayoutID</key>
+ 					<integer>11</integer>
+ 					<key>WakeConfigData</key>
+-					<data>AUcMAg==</data>
++					<data>AUcMAgGXByU=</data>
+ 					<key>WakeVerbReinit</key>
+ 					<true/>
+ 				</dict>
