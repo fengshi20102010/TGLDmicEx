@@ -249,6 +249,7 @@ bool TGLDmic::start(IOService *provider) {
     LOG("TGLDmic v%s on %s (Darwin %d.%d), dsp-reads=%s, dsp-boot=%s%s",
         kTGLDmicVersionString, provider->getName(), version_major, version_minor, readDsp ? "on" : "off",
         bootRequested ? "ON" : "off", keepRunning ? " (keep running)" : "");
+    selectDmicPipeline();                   // 2 or 4 DMIC: decides the IPC table and the DSP ring layout
     if (bootRequested) LOG("DSP boot%s scheduled %u s after the controller is ready%s", captureRequested ? " + capture" : "",
                            bootDelaySec, serviceMode ? " (service mode: DSP stays up, mic exposed to Core Audio)" : "");
 
@@ -351,6 +352,13 @@ void TGLDmic::publish() {
     setProperty("BadReads", badReads, 32);
     setProperty("BootState", bootState, 32);
     if (bootResult[0]) setProperty("BootResult", bootResult);
+    setProperty("DmicChannels", dmicChannels, 32);
+    setProperty("DmicSource", dmicSource);
+    setProperty("NhltStatus", nhltStatus);
+    setProperty("NhltBytes", nhltBytes, 32);
+    setProperty("NhltMics", nhltMics, 32);
+    setProperty("NhltArrayType", nhltArrayType, 32);
+    setProperty("GprocenForced", gprocenForced);
     if (captureRequested) {
         setProperty("CaptureState", captureState, 32);
         if (captureResult[0]) setProperty("CaptureResult", captureResult);

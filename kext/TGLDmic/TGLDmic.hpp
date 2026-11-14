@@ -7,7 +7,8 @@
 #include <IOKit/IOCommandGate.h>
 #include "DmaBuffer.hpp"
 
-struct IpcMsg;   // IpcReplay.hpp
+struct IpcMsg;        // IpcCommon.hpp
+struct IpcPipeline;   // IpcCommon.hpp
 
 // Hook-registration diagnostics shared with TGLDmicLilu.cpp and published by TGLDmic::publish().
 // Error/result fields use +1 encoding so 0 means "not reached".
@@ -119,6 +120,7 @@ private:
     bool corePowerUp();
     bool coreRun();
     void corePowerDown();
+    void coreResetPowerDown(uint32_t mask);
     bool bootDsp();
 
     // ---- Phase 3: DMIC capture test (only with -tgldmiccap, implies boot) ----
@@ -129,8 +131,20 @@ private:
     uint32_t captureState {0};        // 0 idle, 1 ok, 2 failed
     char captureResult[96] {};
     DmaBuffer ringBuf, ptBuf, capBdl;
-    OSData *capSnap {nullptr};         // 1 s of raw S32_LE 4ch 48 kHz audio, published as "CaptureSnapshot"
-    uint32_t chPeak[4] {}, chMeanAbs[4] {};
+    OSData *capSnap {nullptr};         // 1 s of raw S32_LE <dmicChannels> ch 48 kHz audio, "CaptureSnapshot"
+    static constexpr uint32_t kMaxDmicChannels = 4;
+    uint32_t chPeak[kMaxDmicChannels] {}, chMeanAbs[kMaxDmicChannels] {};
+    // DMIC pipeline: 2 or 4 PDM microphones. Chosen once in start() from tgldmicch=<2|4>, else the
+    // ACPI NHLT table (same rule as Linux intel_nhlt_get_dmic_geo), else 4 (the original behaviour).
+    const IpcPipeline *ipc {nullptr};
+    uint32_t dmicChannels {4};
+    const char *dmicSource {"default"};
+    // What the ACPI NHLT lookup found (published in ioreg; the 128-line log ring forgets it):
+    uint32_t nhltBytes {0}, nhltMics {0}, nhltArrayType {0};
+    const char *nhltStatus {"not read"};
+    void selectDmicPipeline();
+    uint32_t srcFrameBytes() const { return dmicChannels * 4; }          // S32_LE x channels
+    uint32_t srcRingFrames() const { return kRingBytes / srcFrameBytes(); }
     uint64_t capBytes {0};
     static constexpr uint32_t kEnvMax = 100;
     uint32_t env[kEnvMax] {};        // per-100 ms mean |x| of ch0
@@ -171,7 +185,7 @@ private:
     uint32_t injectCandidates {0};     // running coupled input descriptors found by the last watch
     uint32_t imicSearchTick {0};       // samples tick before the next engine lookup
     uint32_t imicSafetyFrames {57};    // IOAudioEngineInputSampleOffset of the internal mic
-    static constexpr uint32_t kInjectRate = 48000, kInjectSrcFrames = kRingBytes / 16;
+    static constexpr uint32_t kInjectRate = 48000;   // DSP ring frames: srcRingFrames()
     bool findImicTag();
     bool injectorWatch();
     bool injectorStart(uint32_t idx);
@@ -203,6 +217,7 @@ private:
     bool streaming {false};
     bool setupDone {false}, triggered {false};
     bool gatingOff {false};
+    bool gprocenForced {false};       // PPCTL.GPROCEN set by us (firmware left it clear); cleared again in gating(true)
     IOCommandGate *gate {nullptr};
     static IOReturn gatedShutdown(OSObject *o, void *, void *, void *, void *);
     static IOReturn gatedPowerLost(OSObject *o, void *, void *, void *, void *);

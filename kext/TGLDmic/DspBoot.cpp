@@ -78,9 +78,33 @@ void TGLDmic::gating(bool enable) {
         w32(HDA_EM2, savedEm2 & ~EM2_L1SEN);
         pci->configWrite32(PCI_PGCTL, savedPgctl | PCI_PGCTL_ADSPPGD);
         LOG("boot: clock/power gating off (CGCTL 0x%08x PGCTL 0x%08x EM2 0x%08x)", savedCgctl, savedPgctl, savedEm2);
+        // PPCTL.GPROCEN (bit 30) is the global "DSP processing enable". Linux SOF sets it once at probe
+        // (hda_dsp_ctrl_ppcap_enable). Without it the DSP ignores ADSPCS SPA writes and CPA never comes up.
+        // Some firmwares (e.g. ThinkPad X1C7, EliteBook 840 G8) leave it set before macOS starts; others
+        // (Lenovo XiaoXin Pro 13 2020, 17aa:380f) leave PPCTL = 0, which made every boot fail at
+        // "core0 power up (CPA)". Set it for the DSP's lifetime and restore the HDA driver's value after.
+        // tgldmicgproc=0 disables this.
+        int gprocArg = 1;
+        PE_parse_boot_argn("tgldmicgproc", &gprocArg, sizeof(gprocArg));
+        gprocenForced = false;
+        if (gprocArg != 0 && ppOffset) {
+            uint32_t ppctl = r32(ppOffset + HDA::PP_PPCTL);
+            if (!(ppctl & HDA::PPCTL_GPROCEN)) {
+                w32(ppOffset + HDA::PP_PPCTL, ppctl | HDA::PPCTL_GPROCEN);
+                gprocenForced = true;
+                IODelay(100);
+                LOG("boot: PPCTL.GPROCEN was clear (0x%08x) - set: PPCTL 0x%08x, ADSPCS 0x%08x", ppctl,
+                    r32(ppOffset + HDA::PP_PPCTL), dsp ? d32(DSP::ADSPCS) : 0);
+            }
+        }
     } else {
         if (!gatingOff) return;
         gatingOff = false;
+        if (gprocenForced && ppOffset) {
+            gprocenForced = false;
+            w32(ppOffset + HDA::PP_PPCTL, r32(ppOffset + HDA::PP_PPCTL) & ~HDA::PPCTL_GPROCEN);
+            LOG("boot: PPCTL.GPROCEN restored (clear), PPCTL 0x%08x", r32(ppOffset + HDA::PP_PPCTL));
+        }
         pci->configWrite32(PCI_PGCTL, savedPgctl);
         w32(HDA_EM2, savedEm2);
         pci->configWrite32(PCI_CGCTL, savedCgctl);
@@ -235,6 +259,17 @@ bool TGLDmic::coreRun() {
     return true;
 }
 
+// Stall + reset the given cores, then remove their power (hda_dsp_core_reset_power_down). Not fatal.
+void TGLDmic::coreResetPowerDown(uint32_t mask) {
+    dw32(DSP::ADSPCS, d32(DSP::ADSPCS) | CSTALL(mask));
+    dw32(DSP::ADSPCS, d32(DSP::ADSPCS) | CRST(mask));
+    pollDsp(DSP::ADSPCS, CRST(mask), CRST(mask), 50000);
+    dw32(DSP::ADSPCS, d32(DSP::ADSPCS) & ~SPA(mask));
+    uint32_t v = 0;
+    bool ok = pollDsp(DSP::ADSPCS, CPA(mask), 0, 50000, &v);
+    LOG("boot: cores 0x%x %s, ADSPCS 0x%08x", mask, ok ? "powered down" : "did NOT power down", v);
+}
+
 void TGLDmic::corePowerDown() {
     if (!dsp) return;
     uint32_t mask = targetCoreMask();
@@ -340,6 +375,9 @@ bool TGLDmic::bootDsp() {
         if (!coreRun()) break;
         if (!pollDsp(DSP::HIPCIDA, DSP::IPC_DONE, DSP::IPC_DONE, 500000, &v)) { fail("ROM IPC ack (HIPCIDA)", v); break; }
         dw32(DSP::HIPCIDA, d32(DSP::HIPCIDA) | DSP::IPC_DONE);               // W1C
+        // cl_dsp_init step 5: the ROM and this pipeline run on core 0 only; power the other
+        // host-managed cores (cAVS 1.8: 1..3) back down, as Linux hda_dsp_core_reset_power_down() does.
+        if (uint32_t others = targetCoreMask() & ~CORE0) coreResetPowerDown(others);
         if (!pollDsp(DSP::ROM_STATUS, FSR_MASK, FSR_INIT_DONE, 300000, &v)) { fail("ROM init done", v); break; }
         LOG("boot: ROM init done, FSR 0x%08x", v);
         // hda_cl_copy_fw: run the stream, wait for FW_ENTERED, stop

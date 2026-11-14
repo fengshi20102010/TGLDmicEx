@@ -4,7 +4,10 @@
 #include "TGLDmic.hpp"
 #include "Regs.hpp"
 #include "IpcReplay.hpp"
+#include "IpcReplay2ch.hpp"
+#include "Nhlt.hpp"
 #include <IOKit/IOLib.h>
+#include <IOKit/acpi/IOACPIPlatformDevice.h>
 #include <kern/clock.h>
 
 #define LOG(fmt, ...) logLine(fmt, ##__VA_ARGS__)
@@ -15,10 +18,62 @@ constexpr uint32_t SD_CTL_INT_MASK = 0x1C, SD_TAG_MASK = 0xFu << 20;
 constexpr uint32_t VS_DPIB_BASE = 0x1084, VS_DPIB_STRIDE = 0x20;
 constexpr uint32_t SPB_SPBFCCTL = 0x04;
 constexpr uint32_t RING_BYTES = 0x10000, PERIOD_BYTES = 0x4000, PAGES = RING_BYTES / 4096;
-constexpr uint16_t FMT_48K_32BIT_4CH = 0x0043;       // BASE 48k, BITS=100 (32), CHAN=3
-constexpr uint32_t FRAME_BYTES = 16;                  // 4 ch x 4 bytes
-constexpr uint32_t SNAPSHOT_BYTES = 48000 * FRAME_BYTES; // 1 s
-constexpr uint32_t CAPTURE_SECONDS = 8, ENV_STEP_BYTES = 4800 * FRAME_BYTES; // envelope: 100 ms steps
+// HDA SD_FMT: BASE 48 kHz, BITS = 100 (32-bit container), CHAN = channels - 1
+constexpr uint16_t FMT_48K_32BIT = 0x0040;
+constexpr uint32_t CAPTURE_SECONDS = 8, ENV_STEP_FRAMES = 4800;   // envelope: 100 ms steps
+constexpr uint32_t SNAPSHOT_FRAMES = 48000;                       // 1 s
+
+// Captured pipelines (linux/extract-ipc.py). Both use the same SOF topology (sof-hda-generic*.tplg,
+// pipeline 10); the 2 ch one differs in DAI_CONFIG (1 PDM controller), buffer sizes, the volume
+// component's channel count and the PCM channel count.
+const IpcPipeline kPipe4ch = { kIpc_setup, COUNT(kIpc_setup), kIpc_start, COUNT(kIpc_start), kIpc_stop,
+    COUNT(kIpc_stop), kIpc_teardown, COUNT(kIpc_teardown), 4, "HP EliteBook 840 G8" };
+const IpcPipeline kPipe2ch = { kIpc2ch_setup, COUNT(kIpc2ch_setup), kIpc2ch_start, COUNT(kIpc2ch_start),
+    kIpc2ch_stop, COUNT(kIpc2ch_stop), kIpc2ch_teardown, COUNT(kIpc2ch_teardown), 2,
+    "Lenovo XiaoXin Pro 13 2020" };
+}
+
+// tgldmicch=<2|4> wins; otherwise the ACPI NHLT table decides (1-2 mics -> 2 ch pipeline, 3+ -> 4 ch);
+// without a usable NHLT keep the original 4 ch pipeline.
+void TGLDmic::selectDmicPipeline() {
+    uint32_t ch = 0;
+    // The NHLT is always read and logged, even when tgldmicch= overrides it, so one boot shows whether
+    // the detection works on this machine.
+    // IOACPIPlatformExpert::getACPITableData is protected; the public path is the controller's own
+    // ACPI node (IOPCIDevice "acpi-device", e.g. _SB.PCI0.HDAS), which forwards to the platform.
+    auto pe = pci ? OSDynamicCast(IOACPIPlatformDevice, pci->getProperty("acpi-device")) : nullptr;
+    const OSData *t = pe ? pe->getACPITableData("NHLT", 0) : nullptr;   // owned by the platform expert
+    uint32_t nhltCh = 0;
+    nhltBytes = nhltMics = nhltArrayType = 0;
+    nhltStatus = pe ? "no NHLT table" : "controller has no acpi-device";
+    if (t && t->getLength()) {
+        auto info = Nhlt::dmicInfo(static_cast<const uint8_t *>(t->getBytesNoCopy()), t->getLength());
+        nhltBytes = t->getLength(); nhltMics = info.mics; nhltArrayType = info.arrayType;
+        nhltStatus = info.mics ? "ok" : "table present, no PDM capture endpoint";
+        LOG("dmic: NHLT %u bytes: %u PDM mic(s), array type 0x%02x%s", t->getLength(), info.mics,
+            info.arrayType, info.fromFormats ? " (from format channels)" : "");
+        if (info.mics) {
+            nhltCh = info.mics <= 2 ? 2 : 4;
+            if (info.mics != 2 && info.mics != 4)
+                LOG("dmic: no captured pipeline for %u mics - using the %u ch one", info.mics, nhltCh);
+        }
+    } else {
+        LOG("dmic: no NHLT table (%s)", pe ? "not present" : "controller has no acpi-device");
+    }
+    int arg = 0;
+    if (PE_parse_boot_argn("tgldmicch", &arg, sizeof(arg))) {
+        if (arg == 2 || arg == 4) {
+            ch = (uint32_t)arg; dmicSource = "boot-arg tgldmicch";
+            if (nhltCh && nhltCh != ch) LOG("dmic: WARNING tgldmicch=%d disagrees with the NHLT (%u ch)", arg, nhltCh);
+        } else {
+            LOG("dmic: ignoring tgldmicch=%d (only 2 or 4)", arg);
+        }
+    }
+    if (!ch && nhltCh) { ch = nhltCh; dmicSource = "NHLT"; }
+    if (!ch) { ch = 4; dmicSource = "default (no usable NHLT)"; }
+    ipc = (ch == 2) ? &kPipe2ch : &kPipe4ch;
+    dmicChannels = ipc->channels;
+    LOG("dmic: %u ch pipeline (%s), captured on %s", dmicChannels, dmicSource, ipc->source);
 }
 
 void TGLDmic::capFail(const char *what, uint32_t value) {
@@ -69,7 +124,7 @@ bool TGLDmic::replay(const IpcMsg *list, uint32_t count, const char *phase) {
             buf[kPcmParamPhy] = (uint32_t)ptBuf.iova;
             buf[kPcmParamPages] = PAGES;
             buf[kPcmParamSize] = RING_BYTES;
-            buf[kPcmParamTagCh] = (4u << 16) | capStreamTag;
+            buf[kPcmParamTagCh] = (dmicChannels << 16) | capStreamTag;
             buf[kPcmParamPeriod] = PERIOD_BYTES;
         }
         if (!ipcSend(buf, m.words, reply, 5)) {
@@ -106,7 +161,7 @@ bool TGLDmic::prepareCaptureStream(uint32_t idx, uint32_t tag) {
     w32(sd + HDA::SD_BDPL, 0); w32(sd + HDA::SD_BDPU, 0);
     w32(sd, (r32(sd) & ~SD_TAG_MASK) | (tag << HDA::SD_CTL_TAG_SHIFT));
     w32(sd + HDA::SD_CBL, RING_BYTES);
-    w16(sd + HDA::SD_FMT, FMT_48K_32BIT_4CH);
+    w16(sd + HDA::SD_FMT, (uint16_t)(FMT_48K_32BIT | (dmicChannels - 1)));
     w16(sd + HDA::SD_LVI, RING_BYTES / PERIOD_BYTES - 1);
     w32(sd + HDA::SD_BDPL, (uint32_t)capBdl.iova);
     w32(sd + HDA::SD_BDPU, (uint32_t)(capBdl.iova >> 32));
@@ -161,13 +216,14 @@ bool TGLDmic::pipelineStart() {
     if (!ensureCaptureBuffers()) { capFail("DMA alloc", 0); return false; }
     bzero(ringBuf.virt, ringBuf.size);
     if (!prepareCaptureStream(idx, capStreamTag)) return false;
-    if (!replay(kIpc_setup, COUNT(kIpc_setup), "setup")) { pipelineStop(); return false; }
+    if (!ipc) selectDmicPipeline();
+    if (!replay(ipc->setup, ipc->setupCount, "setup")) { pipelineStop(); return false; }
     setupDone = true;
     w32(sd, r32(sd) | HDA::SD_CTL_RUN | SD_CTL_INT_MASK);
     uint32_t v;
     bool fifoReady = pollHda(sd, 0x20000000, 0x20000000, 5000, &v);
     LOG("cap: host DMA running, CTL 0x%08x (FIFORDY %s)", v, fifoReady ? "yes" : "no");
-    if (!replay(kIpc_start, COUNT(kIpc_start), "start")) { pipelineStop(); return false; }
+    if (!replay(ipc->start, ipc->startCount, "start")) { pipelineStop(); return false; }
     triggered = true;
     streaming = true;
     return true;
@@ -176,12 +232,12 @@ bool TGLDmic::pipelineStart() {
 // IPC trigger stop, host DMA stop, PCM free, free widgets, release the descriptor (hda_dsp_pcm_trigger/hw_free)
 void TGLDmic::pipelineStop() {
     const uint32_t idx = capInIndex, sd = sdOffset(idx);
-    if (triggered && dsp) replay(kIpc_stop, 1, "stop");
+    if (triggered && dsp && ipc) replay(ipc->stop, 1, "stop");
     w32(sd, r32(sd) & ~(HDA::SD_CTL_RUN | SD_CTL_INT_MASK));
     pollHda(sd, HDA::SD_CTL_RUN, 0, 5000);
-    if (setupDone && dsp) {
-        if (triggered) replay(kIpc_stop + 1, COUNT(kIpc_stop) - 1, "pcm-free");
-        replay(kIpc_teardown, COUNT(kIpc_teardown), "teardown");
+    if (setupDone && dsp && ipc) {
+        if (triggered) replay(ipc->stop + 1, ipc->stopCount - 1, "pcm-free");
+        replay(ipc->teardown, ipc->teardownCount, "teardown");
     }
     streamStopReset(sd);
     w32(sd + HDA::SD_BDPL, 0); w32(sd + HDA::SD_BDPU, 0);
@@ -226,6 +282,10 @@ bool TGLDmic::captureTest() {
     captureState = 0;
     LOG("cap: === phase 3 DMIC capture test ===");
     const uint32_t idx = capInIndex, dpib = VS_DPIB_BASE + VS_DPIB_STRIDE * idx;
+    if (!ipc) selectDmicPipeline();
+    const uint32_t nch = dmicChannels, FRAME_BYTES = srcFrameBytes();
+    const uint32_t SNAPSHOT_BYTES = SNAPSHOT_FRAMES * FRAME_BYTES;
+    bzero(chPeak, sizeof(chPeak)); bzero(chMeanAbs, sizeof(chMeanAbs));
     OSSafeReleaseNULL(capSnap);
     capSnap = OSData::withCapacity(SNAPSHOT_BYTES);
     bool ok = false;
@@ -257,9 +317,9 @@ bool TGLDmic::captureTest() {
                 uint32_t take = min(chunk, SNAPSHOT_BYTES - blockLen);
                 const int32_t *smp = reinterpret_cast<const int32_t *>(ringBuf.virt + readPos);
                 for (uint32_t f = 0; f < take / FRAME_BYTES; f++) {
-                    int64_t x = smp[f * 4]; uint64_t a = (uint64_t)(x < 0 ? -x : x);
+                    int64_t x = smp[f * nch]; uint64_t a = (uint64_t)(x < 0 ? -x : x);
                     blockEnergy += a >> 8; envAcc += a;
-                    if (++envFrames == ENV_STEP_BYTES / FRAME_BYTES) {
+                    if (++envFrames == ENV_STEP_FRAMES) {
                         if (envCount < kEnvMax) env[envCount++] = (uint32_t)(envAcc / envFrames);
                         envAcc = 0; envFrames = 0;
                     }
@@ -279,24 +339,24 @@ bool TGLDmic::captureTest() {
         IOFree(block, SNAPSHOT_BYTES);
         envLen = envCount;
         capBytes = total;
-        LOG("cap: streamed %llu bytes in %u ms (expect ~768 B/ms), %u x 1 s blocks, loudest = block %u",
-            (unsigned long long)total, waited, blocks, bestBlock);
+        LOG("cap: streamed %llu bytes in %u ms (expect ~%u B/ms, %u ch), %u x 1 s blocks, loudest = block %u",
+            (unsigned long long)total, waited, 48 * FRAME_BYTES, nch, blocks, bestBlock);
         for (uint32_t i = 0; i + 10 <= envCount; i += 10)
             LOG("cap: env %us: %u %u %u %u %u %u %u %u %u %u", i / 10, env[i], env[i+1], env[i+2], env[i+3], env[i+4],
                 env[i+5], env[i+6], env[i+7], env[i+8], env[i+9]);
         if (blocks < 1) { capFail("DMA position did not advance", r32(dpib)); break; }
 
-        // per-channel peak and mean |x| over the snapshot (S32_LE, 4 ch interleaved)
+        // per-channel peak and mean |x| over the snapshot (S32_LE, nch interleaved; unused slots stay 0)
         auto s = static_cast<const int32_t *>(capSnap->getBytesNoCopy());
         uint32_t frames = capSnap->getLength() / FRAME_BYTES;
-        uint64_t sum[4] {};
+        uint64_t sum[kMaxDmicChannels] {};
         for (uint32_t f = 0; f < frames; f++)
-            for (uint32_t c = 0; c < 4; c++) {
-                int64_t x = s[f * 4 + c]; uint32_t a = (uint32_t)(x < 0 ? -x : x);
+            for (uint32_t c = 0; c < nch; c++) {
+                int64_t x = s[f * nch + c]; uint32_t a = (uint32_t)(x < 0 ? -x : x);
                 if (a > chPeak[c]) chPeak[c] = a;
                 sum[c] += a;
             }
-        for (uint32_t c = 0; c < 4; c++) chMeanAbs[c] = frames ? (uint32_t)(sum[c] / frames) : 0;
+        for (uint32_t c = 0; c < nch; c++) chMeanAbs[c] = frames ? (uint32_t)(sum[c] / frames) : 0;
         LOG("cap: peak |x| ch0 %u ch1 %u ch2 %u ch3 %u (full scale 2147483647)", chPeak[0], chPeak[1], chPeak[2], chPeak[3]);
         LOG("cap: mean |x| ch0 %u ch1 %u ch2 %u ch3 %u", chMeanAbs[0], chMeanAbs[1], chMeanAbs[2], chMeanAbs[3]);
         bool signal = chMeanAbs[0] || chMeanAbs[1] || chMeanAbs[2] || chMeanAbs[3];

@@ -28,7 +28,7 @@
 namespace {
 constexpr uint32_t SD_CTL_RUN = 1u << 1;
 constexpr uint32_t VS_DPIB_BASE = 0x1084, VS_DPIB_STRIDE = 0x20;
-constexpr uint32_t kSrcFrameBytes = 16;                 // S32_LE x 4 ch from the DSP
+// DSP ring frame = S32_LE x dmicChannels (2 or 4): srcFrameBytes() / srcRingFrames()
 constexpr uint32_t kHookSrcMargin = 256;                // source frames kept behind the DSP head (~5 ms)
 constexpr uint32_t kHookDspResyncFrames = 2048;         // resync the smoothed DSP position beyond this (~43 ms)
 const uint32_t kBitDepth[8] = {8, 16, 20, 24, 32, 0, 0, 0};
@@ -264,9 +264,11 @@ bool TGLDmic::hookFillClient(void *destBuf, uint32_t firstSampleFrame, uint32_t 
     if (live) {
         uint32_t W = (lpib / injectFrameBytes) % injectRingFrames;
 
+        // DSP ring layout: S32_LE x srcCh interleaved (fixed for the life of the service).
+        const uint32_t srcCh = dmicChannels, srcFB = srcFrameBytes(), srcFrames = srcRingFrames();
         // Smoothed DSP position (DPIB may only advance in period bursts).
-        const uint64_t wrapQ = (uint64_t)kInjectSrcFrames << 32;
-        uint64_t dpibQ = (uint64_t)((dpibRaw % kRingBytes) / kSrcFrameBytes) << 32;
+        const uint64_t wrapQ = (uint64_t)srcFrames << 32;
+        uint64_t dpibQ = (uint64_t)((dpibRaw % kRingBytes) / srcFB) << 32;
         uint64_t now = mach_absolute_time();
         if (!hookDspInit) {
             hookDspQ = dpibQ;
@@ -295,9 +297,9 @@ bool TGLDmic::hookFillClient(void *destBuf, uint32_t firstSampleFrame, uint32_t 
         if (dFirst > injectRingFrames / 2) dFirst = 0;
         uint64_t distFirst = (uint64_t)dFirst * injectStep + marginQ;
         uint32_t need = (uint32_t)((distFirst >> 32) + (((uint64_t)numSampleFrames * injectStep) >> 32) + 4);
-        if (need > kInjectSrcFrames) need = kInjectSrcFrames;
+        if (need > srcFrames) need = srcFrames;
         uint32_t start = (uint32_t)(((dspQ + wrapQ - (distFirst % wrapQ)) % wrapQ) >> 32);
-        uint32_t startByte = start * kSrcFrameBytes, bytes = need * kSrcFrameBytes;
+        uint32_t startByte = start * srcFB, bytes = need * srcFB;
         if (startByte + bytes <= kRingBytes) {
             ringBuf.invalidate(startByte, bytes);
         } else {
@@ -314,10 +316,10 @@ bool TGLDmic::hookFillClient(void *destBuf, uint32_t firstSampleFrame, uint32_t 
             uint64_t off = (uint64_t)d * injectStep + marginQ;
             uint64_t q = (dspQ + wrapQ - (off % wrapQ)) % wrapQ;
             uint32_t si = (uint32_t)(q >> 32), frac = (uint32_t)q;
-            const int32_t *a = src + si * 4;
-            const int32_t *b = src + ((si + 1) % kInjectSrcFrames) * 4;
-            int32_t s[4];
-            for (int c = 0; c < 4; c++) {
+            const int32_t *a = src + si * srcCh;
+            const int32_t *b = src + ((si + 1) % srcFrames) * srcCh;
+            int32_t s[kMaxDmicChannels] {};
+            for (uint32_t c = 0; c < srcCh; c++) {
                 int64_t v;
                 if (frac == 0) v = a[c];
                 else v = (int64_t)a[c] + (((int64_t)(b[c] - a[c]) * (int64_t)frac) >> 32);
@@ -329,13 +331,13 @@ bool TGLDmic::hookFillClient(void *destBuf, uint32_t firstSampleFrame, uint32_t 
             if (toFloat) {
                 float *out = reinterpret_cast<float *>(destBuf) + (uint64_t)i * ch;
                 for (uint32_t c = 0; c < ch; c++) {
-                    int32_t v = (ch == 1) ? (int32_t)(((int64_t)s[0] + s[1]) / 2) : s[c & 3];
+                    int32_t v = (ch == 1) ? (int32_t)(((int64_t)s[0] + s[1]) / 2) : s[c % srcCh];
                     out[c] = (float)v * (1.0f / 2147483648.0f);
                 }
             } else {
                 int32_t *out = reinterpret_cast<int32_t *>(destBuf) + (uint64_t)i * ch;
                 for (uint32_t c = 0; c < ch; c++)
-                    out[c] = (ch == 1) ? (int32_t)(((int64_t)s[0] + s[1]) / 2) : s[c & 3];
+                    out[c] = (ch == 1) ? (int32_t)(((int64_t)s[0] + s[1]) / 2) : s[c % srcCh];
             }
             p = (p + 1) % injectRingFrames;
         }
@@ -374,7 +376,7 @@ bool TGLDmic::injectorWatch() {
                 LOG("hook: %llu fills, %llu frames | engine W %u, DSP pos %u",
                     (unsigned long long)hookFills, (unsigned long long)hookFrames,
                     (r32(sdOffset(injectIdx) + HDA::SD_LPIB) / injectFrameBytes) % injectRingFrames,
-                    (r32(VS_DPIB_BASE + VS_DPIB_STRIDE * capInIndex) % kRingBytes) / kSrcFrameBytes);
+                    (r32(VS_DPIB_BASE + VS_DPIB_STRIDE * capInIndex) % kRingBytes) / srcFrameBytes());
             }
         }
         return injecting;

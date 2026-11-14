@@ -43,5 +43,12 @@ $(OUT): $(OBJS) TGLDmic/Info.plist
 	cd build && ditto -c -k --keepParent TGLDmic.kext TGLDmic.kext.zip
 	@echo "built $(OUT)"; nm -gU $(OUT)/Contents/MacOS/TGLDmic | grep -E 'kmod_info|_start' || true
 
+# Host unit tests (no kernel SDK needed): NHLT DMIC detection against the dumps in captures/
+test: build/nhlt_test
+	./build/nhlt_test
+build/nhlt_test: tests/nhlt_test.cpp TGLDmic/Nhlt.hpp
+	@mkdir -p build
+	clang++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -g $< -o $@
 clean:
 	rm -rf build
+.PHONY: all test clean

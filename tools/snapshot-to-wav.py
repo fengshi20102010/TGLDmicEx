@@ -42,11 +42,19 @@ except Exception:
 if not data:
     sys.exit("CaptureSnapshot not found (boot with -tgldmiccap)")
 out = sys.argv[2] if len(sys.argv) > 2 else "tgldmic-dmic.wav"
-w = wave.open(out, "wb"); w.setnchannels(4); w.setsampwidth(4); w.setframerate(48000); w.writeframes(data); w.close()
+# Channel count of the DSP pipeline (2 or 4, kext >= 0.6.5 publishes DmicChannels); older kexts: 4.
+ch = None
+try:
+    ch = find_key(plistlib.loads(raw), "DmicChannels")
+except Exception:
+    m = re.search(rb'"DmicChannels" = (\d+)', raw)
+    ch = int(m.group(1)) if m else None
+ch = ch if ch in (2, 4) else 4
+w = wave.open(out, "wb"); w.setnchannels(ch); w.setsampwidth(4); w.setframerate(48000); w.writeframes(data); w.close()
 s = struct.unpack("<%di" % (len(data) // 4), data)
-print(f"{out}: {len(data) // 16} frames ({len(data) / 768000:.2f} s)")
-for c in range(4):
-    v = s[c::4]
+print(f"{out}: {len(data) // (4 * ch)} frames, {ch} ch ({len(data) / (4 * ch * 48000):.2f} s)")
+for c in range(ch):
+    v = s[c::ch]
     rms = math.sqrt(sum(x * x for x in v) / len(v)) / 2**31
     pk = max(abs(x) for x in v) / 2**31
     db = lambda x: 20 * math.log10(x) if x > 0 else float("-inf")
