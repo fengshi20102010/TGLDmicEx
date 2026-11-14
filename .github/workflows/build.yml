@@ -19,7 +19,9 @@ jobs:
           # Release zips ship only the built kext, so take them from the tagged source tree.
           git clone --depth 1 --branch 1.7.2 https://github.com/acidanthera/Lilu /tmp/Lilu-src
           mkdir -p Lilu.kext/Contents/Resources
-          cp -R /tmp/Lilu-src/Lilu/Headers /tmp/Lilu-src/Lilu/Library Lilu.kext/Contents/Resources/
+          # -L: Headers/hde32.h and hde64.h are relative symlinks (../../hde/...) that break when copied as links
+          cp -RL /tmp/Lilu-src/Lilu/Headers /tmp/Lilu-src/Lilu/Library Lilu.kext/Contents/Resources/
+          test -f Lilu.kext/Contents/Resources/Headers/hde64.h
           test -f Lilu.kext/Contents/Resources/Headers/kern_api.hpp
           test -f Lilu.kext/Contents/Resources/Library/plugin_start.cpp
       - name: Build kext
