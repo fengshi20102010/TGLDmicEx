@@ -11,7 +11,7 @@ ARCH     = -arch x86_64 -mmacosx-version-min=10.15
 CXXFLAGS = $(ARCH) -std=gnu++17 -O2 -Wall -Wno-unused-private-field -Wno-unused-parameter \
            -nostdinc -isystem $(SDK)/Headers -mkernel -fapple-kext -fno-rtti -fno-exceptions \
            -fno-builtin -fno-common -DKERNEL -DKERNEL_PRIVATE -DDRIVER_PRIVATE -DAPPLE -DNeXT -ITGLDmic \
-           -I$(LILU) -DPRODUCT_NAME=TGLDmic -DMODULE_VERSION=0.6.4 -DLILU_CUSTOM_IOKIT_INIT=1 -DLILU_CUSTOM_KMOD_INIT=1 \
+           -I$(LILU) -DPRODUCT_NAME=TGLDmic -DMODULE_VERSION=0.6.5 -DLILU_CUSTOM_IOKIT_INIT=1 -DLILU_CUSTOM_KMOD_INIT=1 \
            -Wno-deprecated-declarations
 CFLAGS   = $(ARCH) -std=gnu11 -O2 -nostdinc -isystem $(SDK)/Headers -mkernel -fno-builtin -fno-common -DKERNEL
 CCKEXT   = $(shell clang -print-resource-dir)/lib/darwin/libclang_rt.cc_kext.a
