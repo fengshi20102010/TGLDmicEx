@@ -20,6 +20,8 @@ For development and bug reports. Normal users only need `-tgldmiclilu` (see [INS
 | `tgldmicdma=2` | – | Force physical DMA addresses (testing only; default uses the device or system IOMMU mapper) |
 | `tgldmicsnoop=0` / `=2` | – | DEVC no-snoop enable (PCI 0x78 bit 11, required by the DSP ROM): default sets it while the DSP is powered and restores it after; `0` never touches it, `2` leaves it set |
 | `tgldmicpm=1` / `=0` | – | Force / never join the HDA driver's power tree (default: only under AppleHDA) |
+| `tgldmicgproc=0` | – | Don't set `PPCTL.GPROCEN` (DSP processing enable) before the DSP boot. Default: set it when the firmware left it clear (e.g. Lenovo XiaoXin Pro 13), restored afterwards |
+| `tgldmicch=2` / `=4` | – | Force the 2 or 4 microphone pipeline. Default: count PDM mics in the ACPI NHLT (≤2 → 2, else 4), 4 if there is no NHLT. `ioreg`: `DmicChannels`, `DmicSource` |
 | `-tgldmiclilu` / `-tgldmicinject` | 6 – hook | Route `AppleHDAEngine::convertInputSamples` through Lilu and feed the native Internal Microphone engine from the DSP ring (DSP boots on demand). The two flags are equivalent. |
 | `tgldmicgain=<pct>` | 6 | Software gain for the hooked samples, 0–400 % (default 100) |
 
